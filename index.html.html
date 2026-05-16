@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Private Assignment Submission</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 50px; background-color: #f4f4f9; }
+        .form-container { max-width: 450px; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin: 0 auto; }
+        h2 { text-align: center; color: #333; }
+        .input-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+        input[type="text"], input[type="file"] { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        button { width: 100%; padding: 12px; background: #007bff; border: none; color: white; font-size: 16px; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        #status { text-align: center; margin-top: 15px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <h2>Submit Assignment</h2>
+    <form id="uploadForm">
+        <div class="input-group">
+            <label for="studentName">Full Name</label>
+            <input type="text" id="studentName" required>
+        </div>
+        <div class="input-group">
+            <label for="studentId">Student ID / Roll Number</label>
+            <input type="text" id="studentId" required>
+        </div>
+        <div class="input-group">
+            <label for="file">Upload Assignment (PDF, Docx, Image)</label>
+            <input type="file" id="file" required>
+        </div>
+        <button type="submit" id="submitBtn">Submit Securely</button>
+    </form>
+    <div id="status"></div>
+</div>
+
+<script>
+    // Your live Google Web App URL is linked below:
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzQfKoZGiQxtKNov0eC2xjlFhv2YCeMnNv_sB01w48YvEQlY2VymXvoXdDA1B8JIqfWJA/exec";
+
+    document.getElementById('uploadForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const submitBtn = document.getElementById('submitBtn');
+        const statusDiv = document.getElementById('status');
+        const fileInput = document.getElementById('file').files[0];
+        
+        submitBtn.disabled = true;
+        statusDiv.innerText = "Uploading your assignment privately...";
+        statusDiv.style.color = "orange";
+
+        const reader = new FileReader();
+        reader.readAsDataURL(fileInput);
+        
+        reader.onload = function() {
+            const formData = new URLSearchParams();
+            formData.append('fileData', reader.result);
+            formData.append('fileName', fileInput.name);
+            formData.append('studentName', document.getElementById('studentName').value);
+            formData.append('studentId', document.getElementById('studentId').value);
+
+            fetch(WEB_APP_URL, {
+                method: 'POST',
+                body: formData,
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.result === "success") {
+                    statusDiv.innerText = "Success! Your assignment has been securely submitted.";
+                    statusDiv.style.color = "green";
+                    document.getElementById('uploadForm').reset();
+                } else {
+                    statusDiv.innerText = "Error: " + data.error;
+                    statusDiv.style.color = "red";
+                }
+            })
+            .catch(error => {
+                statusDiv.innerText = "An error occurred during submission.";
+                statusDiv.style.color = "red";
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+            });
+        };
+    });
+</script>
+
+</body>
+</html>
